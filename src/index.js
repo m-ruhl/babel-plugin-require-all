@@ -6,7 +6,7 @@ const rootPath = process.cwd();
 
 // eslint-disable-next-line no-unused-vars
 const wrapPath = (_path) => {
-	const sepStart = new RegExp(`^${modulePath.sep}`);
+	const sepStart = new RegExp(`^${modulePath.sep}|\\.`);
 	const sepEnd = new RegExp(`${modulePath.sep}$`);
 	return (sepStart.test(_path) ? '' : modulePath.sep) + _path + (sepEnd.test(_path) ? '' : modulePath.sep);
 };
