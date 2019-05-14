@@ -1,0 +1,11 @@
+{
+    "presets": ["@babel/preset-env"],
+    "plugins": ["transform-ternary-to-if-else"],
+    "env": {
+        "production": {
+            "presets": ["@babel/preset-env", "minify"],
+            "comments": false,
+            "plugins": ["transform-ternary-to-if-else"]
+        }
+    }
+}
