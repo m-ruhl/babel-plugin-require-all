@@ -11,6 +11,19 @@ const wrapPath = (_path) => {
 	return (sepStart.test(_path) ? '' : modulePath.sep) + _path + (sepEnd.test(_path) ? '' : modulePath.sep);
 };
 
+
+const validName = (name) => {
+	if (typeof name !== 'string') return false;
+	if (!name.trim()) return false;
+	try {
+		// eslint-disable-next-line no-new-func
+		Function(name, `var ${name} = 1`);
+		return true;
+	} catch (err) {
+		return false;
+	}
+};
+
 module.exports = (babel) => {
 	const { types } = babel;
 	return {
@@ -76,7 +89,7 @@ module.exports = (babel) => {
 							let [name] = fileRelative.split(modulePath.sep).reverse();
 							[name] = name.split('.');
 							return types.objectProperty(
-								types.identifier(name),
+								(validName(name) && types.identifier(name)) || types.stringLiteral(name),
 								types.callExpression(
 									types.identifier('require'),
 									[types.stringLiteral(fileRelative)],
