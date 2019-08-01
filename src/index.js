@@ -53,17 +53,17 @@ module.exports = (babel) => {
 				}
 
 				// This is the path where 'requireAll' was found
-				const excutionPath = modulePath.dirname(filenameRelative);
+				const executionPath = modulePath.dirname(filenameRelative);
 
 				// Here we extract the path pased to 'requireAll' function
 				// in case this var comes undefined (means no arguments were pased)
-				// the default path to read is 'excutionPath'
-				const [{ value: rawPathToRead = './' } = {}] = path.node.arguments;
+				// the default path to read is 'executionPath'
+				const [{ value: rawPathToRead = './' } = {}, requireCycle = false] = path.node.arguments;
 
 				const pathToRead = wrapPath(rawPathToRead);
 
 				// The absolute path for the files we're going to read
-				let absolutePath = modulePath.join(rootPath, excutionPath, pathToRead);
+				let absolutePath = modulePath.join(rootPath, executionPath, pathToRead);
 
 				// If 'ignorePath' is defined we substract it
 				if (ignorePath != null && ignorePath !== '') {
@@ -73,6 +73,13 @@ module.exports = (babel) => {
 				}
 
 				if (!fs.existsSync(absolutePath)) throw path.buildCodeFrameError(`Path \`${pathToRead}\` doesn't exist`);
+
+				const executionFileAbsolutePath = modulePath.join(
+					absolutePath,
+					modulePath.basename(filenameRelative),
+				);
+
+				console.log(executionFileAbsolutePath);
 
 				// At this point we need to replace the callExpression
 				// for an objectExpression
@@ -84,6 +91,10 @@ module.exports = (babel) => {
 				path.replaceWith(types.objectExpression(
 					fs
 						.readdirSync(absolutePath)
+						.filter((file) => {
+							const fullPath = modulePath.join(absolutePath, file);
+							return (fullPath !== executionFileAbsolutePath) || requireCycle;
+						})
 						.map((file) => {
 							const fileRelative = `${pathToRead}${file}`;
 							let [name] = fileRelative.split(modulePath.sep).reverse();
