@@ -90,13 +90,13 @@ module.exports = (babel) => {
 				// const modules = { 1: contentOfTheModule, 2... };
 				path.replaceWith(types.objectExpression(
 					fs
-						.readdirSync(absolutePath)
+						.readdirSync(absolutePath, { withFileTypes: true })
 						.filter((file) => {
-							const fullPath = modulePath.join(absolutePath, file);
-							return (fullPath !== executionFileAbsolutePath) || requireCycle;
+							const fullPath = modulePath.join(absolutePath, file.name);
+							return file.isFile() && ((fullPath !== executionFileAbsolutePath) || requireCycle);
 						})
 						.map((file) => {
-							const fileRelative = `${pathToRead}${file}`;
+							const fileRelative = `${pathToRead}${file.name}`;
 							let [name] = fileRelative.split(modulePath.sep).reverse();
 							[name] = name.split('.');
 							return types.objectProperty(
